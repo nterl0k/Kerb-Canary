@@ -6,6 +6,10 @@
 
 #Klist ConvertFrom-String Template
 $KTGTParse = @'
+Current LogonId is 0:0
+Targeted LogonId is 0:0
+Cached Tickets: (1)
+
 #{[int]ID*:0}>	Client: {Client:Administrator} @ {ClientDomain:DOMAIN.LAN}
 	Server: {Server:krbtgt/DOMAIN.LAN} @ {ServerDomain:DOMAIN.LAN}
 	KerbTicket Encryption Type: {TicketEncryptionType:AES-256-TICKET}
@@ -41,11 +45,42 @@ $KSessionParse = @'
 $ktgt = Get-Content C:\Users\Admin\Desktop\klist.txt
 $ksession = Get-Content C:\Users\Admin\Desktop\ksession.txt
 
+
+
 #Parse Current Tickets
-$KTGTParse = $ktgt | ConvertFrom-String -TemplateContent $KTGTParse
-$KSessionParse = $ksession | ConvertFrom-String -TemplateContent $KSessionParse
+$KTGTParse = $ktgt | ConvertFrom-String -TemplateContent $KTGTParse | Out-GridView
+#$KSessionParse = $ksession | ConvertFrom-String -TemplateContent $KSessionParse | Out-GridView
+
+$WMISession = Get-WmiObject -Class Win32_LogonSession
+    Foreach($Session in $WMISession){
+    $Session.LogonID = "0x"+[Convert]::ToString($Session.LogonID, 16)
+
+    }
+
+Foreach($Session in $WMISession){
+    
+    $TGT_Ticket = klist.exe tgt -li $Session.LogonId 
+    If ($TGT_Ticket -match "LsaCallAuthenticationPackage"){
+        Write-Host "Logon Session Non-existant" -ForegroundColor Yellow
+    }
+    Else{ 
+    $TGT_Ticket | ConvertFrom-String -TemplateContent $KTGTParse
+         Write-Host "Logon Session Info for: "$Session.LogonId -ForegroundColor Green
+    }
+
+    $TGS_Ticket = klist.exe tickets -li $Session.LogonId 
+    If ($TGS_Ticket -match "LsaCallAuthenticationPackage"){
+        Write-Host "Logon Session Non-existant" -ForegroundColor Yellow
+    }
+    Else{ 
+    $TGS_Ticket | ConvertFrom-String -TemplateContent $KTGTParse
+        Write-Host "Logon Session Info for: "$Session.LogonId -ForegroundColor Green
+    }
+}
 
 #Check for Golden Tickets
 
-$KTGTParse | Out-GridView
-$KSessionParse | Out-GridView
+#$KTGTParse | Out-GridView
+#$WMISession | FT
+
+#$KSessionParse | Out-GridView
