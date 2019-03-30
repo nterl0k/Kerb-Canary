@@ -34,8 +34,8 @@ A probably over complicated script to enumerate the kerberos objects on a window
 C:\PS>./Kerb-Canary.ps1 
 This runs the command in default view results only mode. 
 
-C:\PS>./Kerb-Cabary.ps1 -ReportLevel Info -VerboseUp
+C:\PS>./Kerb-Canary.ps1 -ReportLevel Info -VerboseUp
 This runs the command to show all detections "Info" type and above, then dumps detailed output to the screen at the end.
 
-C:\PS>./Kerb-Cabary.ps1 -ReportLevel Warning -Syslog -SyslogServer 10.2.3.4 -SyslogPort 514
+C:\PS>./Kerb-Canary.ps1 -ReportLevel Warning -Syslog -SyslogServer 10.2.3.4 -SyslogPort 514
 This runs the command to show all detections "Warning" type and above, then sends the results to the indicated syslog server/port.
