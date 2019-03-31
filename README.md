@@ -19,9 +19,9 @@ A probably over complicated script to enumerate the kerberos objects on a window
 
 
 ### Reporting Parameters 
-- EventLog:(Default - Off) (Pending Development)
+- EventLog:(Default - Off)
   - Enable to write events to the Windows event log. 
-  - This defaults to the application log, so running as administrator/system is recommended. This can easily be changed in the script to another log file.
+  - This defaults to a custom log named "Kerb-Canary", this can easily be changed in the script to another log file. Running as administrator/system is recommended. 
 - Syslog:(Default - Off) 
   - Enable to send logs via syslog output.
     - SyslogServer: Configure the syslog destination with this, accepts IPv4 or hostname.
