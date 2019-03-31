@@ -819,9 +819,10 @@ If($EventLog){
     Update_EventID
     Try{
         EventLog_Check
-        Foreach($BadTicket in $Global:BadTickets){
+        Foreach($log in $Global:LoggingArray){
             Try{
                 Write-Host "Wrote to the Windows Event log - $EventLogWin."
+                Write-EventLog -LogName $EventLogWin -Source $EventLogName -Category 0 -EventId $Log.EventID -Message "$($Log.EventID)" -ErrorAction Stop
             }
             Catch {
                 $WinResults = "" | Select LogonID, TicketType, ClientName, ClientDomain, Server-Target, Server-TargetDomain, StartTime, EndTime, TicketEncrypt,EventID
