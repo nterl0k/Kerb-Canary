@@ -18,8 +18,8 @@ A probably over complicated script to enumerate the kerberos objects on a window
   - The will signal the script to dump results of it's run to the screen afterwards, good for debugging.
 
 
-### Reporting Parameters
-- EventLog:(Default - Off)
+### Reporting Parameters 
+- EventLog:(Default - Off) (Pending Development)
   - Enable to write events to the Windows event log. 
   - This defaults to the security log, so needs to be run as administrator/system, but can easily be changed in the script to another log file.
 - Syslog:(Default - Off) 
