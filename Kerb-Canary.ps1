@@ -29,7 +29,7 @@
 
 .PARAMETER EventLog
     Enable writing events to the Windows event log. This defaults to the
-    security log, so needs to be run as administrator/system.
+    application log, so running as administrator/system is recommended.
 
 .PARAMETER Syslog
     Enable syslog server logging.
@@ -114,7 +114,7 @@ param(
 $ExpiryTime = New-TimeSpan -Hours $ExpireTime
 
 # Logging Variables
-$EventLogWin = 'Security'
+$EventLogWin = 'Application'
 $EventLogName = "Kerb-Canary"
 
 #Syslog Header Values
