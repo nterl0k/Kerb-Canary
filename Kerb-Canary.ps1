@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Script to find/kill golden tickets.
 
@@ -28,8 +28,9 @@
     the screen afterwards, good for debugging.
 
 .PARAMETER EventLog
-    Enable writing events to the Windows event log. This defaults to the
-    application log, so running as administrator/system is recommended.
+    Enable writing events to the Windows event log. This defaults to a
+    custom log name "Kerb-Carany", but this can be changed inside the
+    script config. Recommended to be run as administrator/system.
 
 .PARAMETER Syslog
     Enable syslog server logging.
@@ -114,8 +115,8 @@ param(
 $ExpiryTime = New-TimeSpan -Hours $ExpireTime
 
 # Logging Variables
-$EventLogWin = 'Application'
-$EventLogName = "Kerb-Canary"
+$EventLogWin = 'Kerb-Canary'
+$EventLogName = 'Kerb-Canary'
 
 #Syslog Header Values
 $CEFVendor = "CEF Canary"
@@ -524,7 +525,7 @@ Function EventLog_Check{
 IF([System.Diagnostics.EventLog]::SourceExists($EventLogName)){
     Write-Host $EventLogName "log source already exists." -ForegroundColor Green
         Try{
-        Write-EventLog -LogName $EventLogWin -Source $EventLogName -Category 0 -EventId "1001" -Message "$EventLogName was started." -ErrorAction Stop
+        Write-EventLog -LogName $EventLogWin -Source $EventLogName -EventId "1001" -Message "$EventLogName was started." -EntryType Information -Category 0 -ErrorAction Stop
         }
         Catch {
         Write-Host "Event Log couldn't be written, check permissions or reboot device." -ForegroundColor Red
@@ -550,7 +551,10 @@ IF([System.Diagnostics.EventLog]::SourceExists($EventLogName)){
     New-EventLog -LogName $EventLogWin -Source $EventLogName
         IF([System.Diagnostics.EventLog]::SourceExists($EventLogName)){
         Write-Host $EventLogName "log source created." -ForegroundColor Green
-            Try{Write-EventLog -LogName $EventLogWin -Source $EventLogName -Category 0 -EventId "1000" -Message "$EventLogName log created." -ErrorAction Stop
+            Try{
+            Write-EventLog -LogName $EventLogWin -Source $EventLogName -EventId "1000" -Message "$EventLogName log created." -EntryType Information -Category 0 -ErrorAction Stop
+            
+            Write-EventLog -LogName $EventLogWin -Source $EventLogName  -EventId "1001" -Message "$EventLogName was started." -EntryType Information -Category 0 -ErrorAction Stop       
             
             }
             Catch{
@@ -570,6 +574,7 @@ IF([System.Diagnostics.EventLog]::SourceExists($EventLogName)){
             $Global:LoggingArray += $WinResults
             Throw
             }
+
         }
         Else{Throw}
     }
@@ -819,10 +824,16 @@ If($EventLog){
     Update_EventID
     Try{
         EventLog_Check
+        Write-Host "Writing to the Windows Event log - $EventLogWin."
         Foreach($log in $Global:LoggingArray){
             Try{
-                Write-Host "Wrote to the Windows Event log - $EventLogWin."
-                Write-EventLog -LogName $EventLogWin -Source $EventLogName -Category 0 -EventId $Log.EventID -Message "$($Log.EventID)" -ErrorAction Stop
+                If($Log.EventPri -eq 7){$EntryType = "Warning"}
+                Elseif($Log.EventPri -eq 5){$EntryType = "Warning"}
+                Elseif($Log.EventPri -eq 3){$EntryType = "Error"}
+                Elseif($Log.EventPri -eq 1){$EntryType = "Information"}
+                Else{$EntryType = "FailureAudit"}
+
+                Write-EventLog -LogName $EventLogWin -Source $EventLogName -EventId $Log.EventID -Message "$($Log.EventMsg)" -EntryType $EntryType -Category 0 -ErrorAction Stop
             }
             Catch {
                 $WinResults = "" | Select LogonID, TicketType, ClientName, ClientDomain, Server-Target, Server-TargetDomain, StartTime, EndTime, TicketEncrypt,EventID
@@ -872,11 +883,7 @@ If($FlatFile){
     } 
 }
 
-If($LogError){
-Update_EventID
-$Global:LoggingArray | FT *
-}
-ElseIf($VerboseUp -and !$LogError){
+If(($VerboseUp -and !$LogError) -or ($LogError)){
 Update_EventID
 $Global:LoggingArray | FT *
 }
